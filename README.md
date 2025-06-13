@@ -1,47 +1,65 @@
-# Reg-Extract
+# Overview
+The Windows Registry Toolkit is a versatile Python-based utility for analyzing
+and extracting data from the Windows Registry. Designed with both live system
+interrogation and offline forensics in mind, this tool is ideal for cybersecurity
+professionals, digital forensics analysts, red teamers, and system
+administrators.
+With built-in support for interactive exploration, sensitive hive dumping, and
+offline hive parsing, the tool provides deep visibility into Windows system
+configuration, user activity, credential storage, and much more.
+Whether you're conducting incident response, malware analysis, or system
+auditing, the Windows Registry Toolkit empowers you to automate and
+streamline your registry investigation workflow.
 
-A Python-based tool for exploring and analyzing the Windows registry. The tool supports both live system registry exploration and offline hive analysis, providing detailed insights into registry keys, values, and structure.
+# Key features
+- Live Registry Exploration
+● Interactively navigate the Windows Registry in real-time.
+● Select from main registry hives (e.g., HKLM, HKCU, HKU, etc.).
+● Recursively list subkeys and view registry values, including type information.
+● Built-in support for back, exit, and direct value inspection via numbered input.
 
----
+- Hive Dumping (Live Extraction)
+● Automatically dump critical registry hives (SAM, SYSTEM, SECURITY, SOFTWARE,
+.DEFAULT) from the live system.
+● Uses Windows-native reg save command for consistent and secure extraction.
+● Default save location is set to C:\Users\Public\, but easily customizable.
 
-## Features
-
-- **Interactive Live Registry Exploration**: 
-  - Explore the live Windows registry interactively by selecting hives and navigating through subkeys.
-  - View registry values with their data and types.
-
-- **Offline Registry Hive Analysis**:
-  - Load and parse offline registry hive files.
-  - Extract and traverse the full registry structure of the hive.
-  - Save extracted data in a structured JSON format.
-
-- **Flexible Output**:
-  - Specify an output file name for saving offline hive analysis results (default: `registry_output.json`).
-
-## Prerequisites
-
-- Python 3.6+
-- Required libraries:
-  - `argparse`: Built-in Python module for parsing command-line arguments.
-  - `winreg`: Built-in module for accessing live Windows registry (Windows only).
-  - `python-registry`: For processing offline registry hives. Install via:
-    pip install python-registry
+- Offline Hive Analysis
+● Load and parse offline .hiv registry hive files (ideal for forensic investigations).
+● Recursively traverse all keys, subkeys, and values—including binary blobs.
+● Handles binary data with proper hex encoding for safe viewing and processing.
+● Supports exporting the full structure and data into a clean, human-readable JSON
+format.
 
 # Usage
-General Syntax
-python registry_explorer.py [OPTIONS]
+1. Live Registry Interactive Mode
+python registry_tool.py -live
+2. Dump Sensitive Registry Hives
+python registry_tool.py -dump
+Dumps:
+● HKEY_LOCAL_MACHINE\SAM
+● HKEY_LOCAL_MACHINE\SYSTEM
+● HKEY_LOCAL_MACHINE\SECURITY
+● HKEY_LOCAL_MACHINE\SOFTWARE
+● HKEY_USERS\.DEFAULT
+Output:
+All dumped hives are saved in a dumped_hives/ folder as .hiv files.
 
-# Options
--live: Explore the live Windows registry interactively.
--load <HIVE_PATH>: Load an offline registry hive file for analysis.
--output <OUTPUT_FILE>: Specify the output file name for offline hive analysis (default: registry_output.json).
+3. Load and Parse Offline Hive File
+python registry_tool.py -load <path_to_hive_file> [-output
+<output_file.json>]
+If -output is not specified, the output defaults to registry_output.json.
 
-# Explore the Live Registry
-python registry_explorer.py -live
-
-# Analyze an Offline Hive File 
-python registry_explorer.py -load C:\Path\To\Offline\Hive -output custom_output.json
-
-# Limitations
-Permissions: Accessing certain registry keys or values may require administrative privileges.
-Platform: The live registry exploration feature only works on Windows systems.
+# Output Format
+ JSON file contains the full recursive structure:
+{
+"CurrentControlSet": {
+"Enum": {
+"PCI": {
+"VEN_8086&DEV_1234": {
+"DeviceDesc": "Intel PCI Controller",
+"LocationInformation": "PCI bus 0, device 2"
+}
+}
+}
+}
