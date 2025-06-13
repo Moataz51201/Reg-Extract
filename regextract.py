@@ -5,6 +5,8 @@ import json
 import binascii
 from Registry import Registry  # For offline hives (pip install python-registry)
 import winreg  # For live registry
+import subprocess
+import ctypes
 
 # Map registry hives to their respective constants in winreg
 HIVES = {
@@ -14,6 +16,32 @@ HIVES = {
     "HKEY_CLASSES_ROOT": winreg.HKEY_CLASSES_ROOT,
     "HKEY_CURRENT_CONFIG": winreg.HKEY_CURRENT_CONFIG,
 }
+
+# Define registry hives and their save paths
+registry_hives = {
+    "HKLM\\SAM": "SAM",
+    "HKLM\\SECURITY": "SECURITY",
+    "HKLM\\SYSTEM": "SYSTEM",
+    "HKLM\\SOFTWARE": "SOFTWARE",
+    "HKU\\.DEFAULT": "DEFAULT"
+}
+
+dump_path = "C:\\Users\\Public\\"  # Destination for hive dumps
+
+def dump_registry_hives():
+    """Dump Windows registry hives."""
+    for hive_path, filename in registry_hives.items():
+        save_file = os.path.join(dump_path, f"{filename}.hiv")
+        
+        print(f"[+] Dumping {hive_path} to {save_file}...")
+
+        command = f'reg save "{hive_path}" "{save_file}" /y'
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            print(f"[*] Successfully dumped {hive_path}")
+        else:
+            print(f"[-] Failed to dump {hive_path}: {result.stderr.strip()}")
 
 def list_hives():
     """List all registry hives."""
@@ -158,6 +186,7 @@ def explore_live_registry():
 
 def main():
     parser = argparse.ArgumentParser(description="Windows Registry Explorer Tool")
+    parser.add_argument("-dump", action="store_true", help="Dump the live system registry.")
     parser.add_argument("-live", action="store_true", help="Explore the live system registry interactively.")
     parser.add_argument("-load", metavar="HIVE_PATH", type=str, help="Load an offline registry hive file.")
     parser.add_argument("-output", metavar="OUTPUT_FILE", type=str, default="registry_output.json",
@@ -172,6 +201,8 @@ def main():
             print(f"Hive file not found: {args.load}")
             sys.exit()
         process_hive(args.load, args.output)
+    elif args.dump:
+        dump_registry_hives()    
     else:
         parser.print_help()
 
